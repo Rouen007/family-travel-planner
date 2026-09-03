@@ -3,8 +3,7 @@
 This repository provides a standardized skill specification and templates for multi-generational family travel planning.
 
 ## System Prompt & Workflow
-- Read `SKILL.md` for the core decision logic and golden planning rules.
+- Read `SKILL.md` for child age cohorts (0-2yo, 3-6yo, 7-12yo) and transportation engines (HSR vs EV/Gas Roadtrip).
 - Read `templates/questionnaire.md` to guide user inputs.
-- Read `templates/itinerary_template.md` and `templates/deals_matrix_template.md` for output formatting.
-- Execute `scripts/build_styled_docx.py` to compile publication-grade Word documents with table callouts.
-- Execute `scripts/render_poster.py` to render 2K mobile long image posters via Headless Chrome.
+- Apply age-graded dining matrices and hands-on non-heritage activity matching.
+- Execute `python3 scripts/cli.py all --input <markdown_file> --output-dir <dist_dir>` to compile Word docx, web SPA, and 2K long posters.

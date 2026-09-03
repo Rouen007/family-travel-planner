@@ -1,11 +1,15 @@
-# Family Travel Planner (Claude Code / Anthropic Harness Guide)
+# Family Travel Planner (Claude Code & Multi-Harness Guide)
 
-When invoked for family travel planning (or multi-generational trips with toddlers, seniors, and parents):
-1. **Interactive Pre-flight Questionnaire**: Always check traveler profiles (toddler exact height in cm, senior stamina/diet), vehicle type (EV supercharging vs Gas fuel), departure/destination, dates, and lodging base before planning.
-2. **The 5 Golden Rules**:
-   - EV Charging: Plan routes around mall superchargers (18-30 mins full charge + meal + diaper change + free parking); Gas cars: Simple refuel before departure.
-   - 14:00-16:00 Mandatory Nap: Bed nap on arrival/departure days, dual-mode (hotel bed vs stroller in A/C theater) on theme park days.
-   - Senior & Toddler Dining: Local specialties (not common national chains), soft/non-spicy/hot soup, Dianping group buys & Xianyu meal QR codes.
-   - Coordinated Outfits: Red/white亲子 visual center, black trousers base.
-   - Countdown Booking Model: Set alarms for D-7 12:00 museum ticket rush and D-2 meal vouchers.
-3. **Artifact Generation**: Run `scripts/build_styled_docx.py` for Word docs and `scripts/render_poster.py` for mobile long poster PNGs.
+Universal multi-generational family travel planning framework:
+1. **Child Cohort Awareness**:
+   - 0-2yo: Stroller rigid need, 14-16h bed nap, soft pureed food (noodle soup, tofu).
+   - 3-6yo (e.g. 5yo): Hands-on non-heritage activities (puppet show, ZanHua hair dressing, beach sand digging), customizable treats (Four-fruit soup), flexible 1.5h rest.
+   - 7-12yo: Cultural learning, theme park rides.
+2. **Transport Engines**:
+   - High-Speed Rail (HSR): Zero driving fatigue, station-to-hotel taxi, child activity pack on train.
+   - Self-Driving EV/Gas: Mall supercharging + free parking vs Gas quick refuel.
+3. **Age-Graded Dining Matrix**:
+   - Kids: Crispy vinegar pork + bone broth noodle soup + handmade tofu pot.
+   - Seniors: Steamed crab + braised pork belly + hot TieGuanYin tea.
+   - Parents: Sidan Ginger Duck + spicy/savory local treats.
+4. **Artifact Compilation**: Execute `python3 scripts/cli.py all --input <markdown_file> --output-dir <dist_dir> --view`.
