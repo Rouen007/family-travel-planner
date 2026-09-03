@@ -1,6 +1,7 @@
 """
 Publication-Grade Word Document Generator
 Creates beautifully formatted Word documents with table callouts, cards, and zebra tables.
+Robust against variable column counts, empty sections, and dynamic family demographics.
 """
 import os
 import sys
@@ -13,7 +14,6 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
 
-# Import parser
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 from parser import parse_travel_markdown
@@ -49,7 +49,7 @@ def set_cell_border(cell, **kwargs):
     tcPr.append(tcBorders)
 
 def build_docx(input_path, output_path):
-    data = parse_travel_markdown(input_path) if input_path and os.path.exists(input_path) else parse_travel_markdown(__file__)
+    data = parse_travel_markdown(input_path) if input_path and os.path.exists(input_path) else parse_travel_markdown("")
     doc = Document()
     
     # Page setup
@@ -72,7 +72,7 @@ def build_docx(input_path, output_path):
     p = c_hero.paragraphs[0]
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(2)
-    r = p.add_run(f"🏰 {data.get('dates', '2026 行程规划')} · 家庭定制自驾游")
+    r = p.add_run(f"🏰 {data.get('dates', '2026 行程规划')} · 家庭定制度假")
     r.font.size = Pt(10)
     r.font.bold = True
     r.font.color.rgb = RGBColor(254, 205, 211)
@@ -80,7 +80,7 @@ def build_docx(input_path, output_path):
     p2 = c_hero.add_paragraph()
     p2.paragraph_format.space_before = Pt(2)
     p2.paragraph_format.space_after = Pt(4)
-    r2 = p2.add_run(data.get("title", "家庭亲子自驾游保姆级完整规划"))
+    r2 = p2.add_run(data.get("title", "家庭亲子多代旅行保姆级规划"))
     r2.font.size = Pt(16)
     r2.font.bold = True
     r2.font.color.rgb = RGBColor(255, 255, 255)
@@ -88,7 +88,7 @@ def build_docx(input_path, output_path):
     p3 = c_hero.add_paragraph()
     p3.paragraph_format.space_before = Pt(0)
     p3.paragraph_format.space_after = Pt(0)
-    r3 = p3.add_run(data.get("subtitle", "轻松慢游 · 保证14:00-16:00午睡 · 老幼胃口兼顾"))
+    r3 = p3.add_run(data.get("subtitle", "轻松慢游 · 保证午休 · 老少胃口兼顾"))
     r3.font.size = Pt(9.5)
     r3.font.color.rgb = RGBColor(203, 213, 225)
 
@@ -125,190 +125,204 @@ def build_docx(input_path, output_path):
     # Core principle callout
     add_callout([
         ("💡 核心出行原则：", True, 10, RGBColor(225, 29, 72)),
-        ("不赶路、不特种兵，每日锁定 14:00—16:00 黄金午睡，推车友好、停车便捷、少排队、老幼胃口兼顾！", False, 9.5, RGBColor(71, 85, 105))
+        ("不赶路、不特种兵，每日避开正午烈日安排深度午休/静谧休整，推车友好、老少胃口兼顾、沉浸式非遗探索！", False, 9.5, RGBColor(71, 85, 105))
     ])
 
     # 2. Outfits
-    add_heading("全家 4 人红黑白穿搭卡片（已购实物上身效果）", "👗")
-    t_outfit = doc.add_table(rows=1, cols=len(data["outfits"]))
-    t_outfit.alignment = WD_TABLE_ALIGNMENT.CENTER
-    t_outfit.autofit = False
-    
-    col_w = Inches(6.8 / len(data["outfits"]))
-    for idx, card in enumerate(data["outfits"]):
-        c = t_outfit.cell(0, idx)
-        c.width = col_w
-        set_cell_background(c, card.get("bg", "F8FAFC"))
-        set_cell_margins(c, top=140, bottom=140, left=100, right=100)
-        set_cell_border(c, top=dict(sz=6, color="CBD5E1"), bottom=dict(sz=6, color="CBD5E1"), left=dict(sz=6, color="CBD5E1"), right=dict(sz=6, color="CBD5E1"))
+    outfits = data.get("outfits", [])
+    if outfits:
+        add_heading(f"全家 {len(outfits)} 人穿搭卡片（色彩协调 · 拍照大片）", "👗")
+        t_outfit = doc.add_table(rows=1, cols=len(outfits))
+        t_outfit.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_outfit.autofit = False
         
-        cp = c.paragraphs[0]
-        cp.paragraph_format.space_before = Pt(0)
-        cp.paragraph_format.space_after = Pt(2)
-        rn = cp.add_run(card["name"])
-        rn.font.bold = True
-        rn.font.size = Pt(10)
-        
-        cpt = c.add_paragraph()
-        cpt.paragraph_format.space_before = Pt(0)
-        cpt.paragraph_format.space_after = Pt(4)
-        rt = cpt.add_run(card["tag"])
-        rt.font.bold = True
-        rt.font.size = Pt(8)
-        rt.font.color.rgb = RGBColor(100, 116, 139)
-        
-        cpd = c.add_paragraph()
-        cpd.paragraph_format.space_before = Pt(0)
-        cpd.paragraph_format.space_after = Pt(0)
-        rd = cpd.add_run(card["desc"])
-        rd.font.size = Pt(8.5)
-        rd.font.color.rgb = RGBColor(51, 65, 85)
+        col_w = Inches(6.8 / len(outfits))
+        for idx, card in enumerate(outfits):
+            c = t_outfit.cell(0, idx)
+            c.width = col_w
+            set_cell_background(c, card.get("bg", "F8FAFC"))
+            set_cell_margins(c, top=140, bottom=140, left=100, right=100)
+            set_cell_border(c, top=dict(sz=6, color="CBD5E1"), bottom=dict(sz=6, color="CBD5E1"), left=dict(sz=6, color="CBD5E1"), right=dict(sz=6, color="CBD5E1"))
+            
+            cp = c.paragraphs[0]
+            cp.paragraph_format.space_before = Pt(0)
+            cp.paragraph_format.space_after = Pt(2)
+            rn = cp.add_run(card.get("name", "成员"))
+            rn.font.bold = True
+            rn.font.size = Pt(10)
+            
+            cpt = c.add_paragraph()
+            cpt.paragraph_format.space_before = Pt(0)
+            cpt.paragraph_format.space_after = Pt(4)
+            rt = cpt.add_run(card.get("tag", "穿搭角色"))
+            rt.font.bold = True
+            rt.font.size = Pt(8)
+            rt.font.color.rgb = RGBColor(100, 116, 139)
+            
+            cpd = c.add_paragraph()
+            cpd.paragraph_format.space_before = Pt(0)
+            cpd.paragraph_format.space_after = Pt(0)
+            rd = cpd.add_run(card.get("desc", ""))
+            rd.font.size = Pt(8.5)
+            rd.font.color.rgb = RGBColor(51, 65, 85)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(4)
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
     # 3. Advance prep table
-    add_heading("行前关键节点与「门票抢购 / 预约时间表」", "⏰")
-    t_prep = doc.add_table(rows=len(data["prep_rows"]) + 1, cols=4)
-    t_prep.alignment = WD_TABLE_ALIGNMENT.CENTER
-    t_prep.autofit = False
-    p_widths = [Inches(1.2), Inches(1.6), Inches(1.8), Inches(2.2)]
-    
-    headers = ["时间节点", "事项与目标", "预约 / 抢购平台", "核心实操要点"]
-    for idx, h in enumerate(headers):
-        c = t_prep.cell(0, idx)
-        c.width = p_widths[idx]
-        set_cell_background(c, "F1F5F9")
-        set_cell_margins(c, top=100, bottom=100, left=80, right=80)
-        set_cell_border(c, top=dict(sz=4, color="CBD5E1"), bottom=dict(sz=6, color="94A3B8"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
-        p = c.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        r = p.add_run(h)
-        r.font.bold = True
-        r.font.size = Pt(9)
-
-    for r_idx, row in enumerate(data["prep_rows"]):
-        bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
-        for c_idx, val in enumerate(row):
-            c = t_prep.cell(r_idx + 1, c_idx)
-            c.width = p_widths[c_idx]
-            set_cell_background(c, bg)
-            set_cell_margins(c, top=80, bottom=80, left=80, right=80)
-            set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+    prep_rows = data.get("prep_rows", [])
+    if prep_rows:
+        add_heading("行前关键节点与「预约 / 抢购时间表」", "⏰")
+        t_prep = doc.add_table(rows=len(prep_rows) + 1, cols=4)
+        t_prep.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_prep.autofit = False
+        p_widths = [Inches(1.2), Inches(1.6), Inches(1.8), Inches(2.2)]
+        
+        headers = ["时间节点", "事项与目标", "平台 / 渠道", "核心实操要点"]
+        for idx, h in enumerate(headers):
+            c = t_prep.cell(0, idx)
+            c.width = p_widths[idx]
+            set_cell_background(c, "F1F5F9")
+            set_cell_margins(c, top=100, bottom=100, left=80, right=80)
+            set_cell_border(c, top=dict(sz=4, color="CBD5E1"), bottom=dict(sz=6, color="94A3B8"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
             p = c.paragraphs[0]
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(0)
-            r = p.add_run(val)
-            r.font.size = Pt(8.5)
-            if c_idx == 0: r.font.bold = True
+            r = p.add_run(h)
+            r.font.bold = True
+            r.font.size = Pt(9)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(4)
+        for r_idx, row in enumerate(prep_rows):
+            bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
+            for c_idx in range(4):
+                val = row[c_idx] if c_idx < len(row) else ""
+                c = t_prep.cell(r_idx + 1, c_idx)
+                c.width = p_widths[c_idx]
+                set_cell_background(c, bg)
+                set_cell_margins(c, top=80, bottom=80, left=80, right=80)
+                set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                r = p.add_run(str(val))
+                r.font.size = Pt(8.5)
+                if c_idx == 0: r.font.bold = True
+
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
     # 4. Day by day schedule cards
-    add_heading("3 天 2 晚 逐日保姆级时间表", "📅")
-    for day in data["days"]:
-        t_day = doc.add_table(rows=1, cols=1)
-        t_day.alignment = WD_TABLE_ALIGNMENT.CENTER
-        t_day.autofit = False
-        c_day = t_day.cell(0, 0)
-        c_day.width = Inches(6.8)
-        set_cell_background(c_day, "F8FAFC")
-        set_cell_margins(c_day, top=140, bottom=140, left=160, right=160)
-        set_cell_border(c_day, left=dict(sz=14, color=day.get("color_hex", "2563EB")), top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
-        
-        p = c_day.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(2)
-        r_tag = p.add_run(f"【{day['day_tag']}】")
-        r_tag.font.bold = True
-        r_tag.font.size = Pt(10.5)
-        r_tag.font.color.rgb = RGBColor(15, 23, 42)
-        
-        r_sub = p.add_run(f" {day['day_title']}")
-        r_sub.font.bold = True
-        r_sub.font.size = Pt(9.5)
-        r_sub.font.color.rgb = RGBColor(71, 85, 105)
-        
-        for t_time, t_desc in day["items"]:
-            pi = c_day.add_paragraph()
-            pi.paragraph_format.space_before = Pt(2)
-            pi.paragraph_format.space_after = Pt(2)
-            rt = pi.add_run(f"• {t_time}：")
-            rt.font.bold = True
-            rt.font.size = Pt(8.5)
-            rt.font.color.rgb = RGBColor(30, 41, 59)
+    days = data.get("days", [])
+    if days:
+        add_heading(f"{len(days)} 天逐日保姆级时间表", "📅")
+        for day in days:
+            t_day = doc.add_table(rows=1, cols=1)
+            t_day.alignment = WD_TABLE_ALIGNMENT.CENTER
+            t_day.autofit = False
+            c_day = t_day.cell(0, 0)
+            c_day.width = Inches(6.8)
+            set_cell_background(c_day, "F8FAFC")
+            set_cell_margins(c_day, top=140, bottom=140, left=160, right=160)
+            set_cell_border(c_day, left=dict(sz=14, color=day.get("color_hex", "2563EB")), top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
             
-            rd = pi.add_run(t_desc)
-            rd.font.size = Pt(8.5)
-            rd.font.color.rgb = RGBColor(71, 85, 105)
-        
-        doc.add_paragraph().paragraph_format.space_after = Pt(3)
+            p = c_day.paragraphs[0]
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(2)
+            r_tag = p.add_run(f"【{day.get('day_tag', 'Day')}】")
+            r_tag.font.bold = True
+            r_tag.font.size = Pt(10.5)
+            r_tag.font.color.rgb = RGBColor(15, 23, 42)
+            
+            r_sub = p.add_run(f" {day.get('day_title', '')}")
+            r_sub.font.bold = True
+            r_sub.font.size = Pt(9.5)
+            r_sub.font.color.rgb = RGBColor(71, 85, 105)
+            
+            for t_time, t_desc in day.get("items", []):
+                pi = c_day.add_paragraph()
+                pi.paragraph_format.space_before = Pt(2)
+                pi.paragraph_format.space_after = Pt(2)
+                rt = pi.add_run(f"• {t_time}：")
+                rt.font.bold = True
+                rt.font.size = Pt(8.5)
+                rt.font.color.rgb = RGBColor(30, 41, 59)
+                
+                rd = pi.add_run(str(t_desc))
+                rd.font.size = Pt(8.5)
+                rd.font.color.rgb = RGBColor(71, 85, 105)
+            
+            doc.add_paragraph().paragraph_format.space_after = Pt(3)
 
     # 5. Dining deals table
-    add_heading("全行程餐饮美食 ＆「大众点评 ＋ 闲鱼省钱买券」总表", "💰")
-    t_deal = doc.add_table(rows=len(data["deals"]) + 1, cols=6)
-    t_deal.alignment = WD_TABLE_ALIGNMENT.CENTER
-    t_deal.autofit = False
-    d_widths = [Inches(1.3), Inches(1.6), Inches(0.7), Inches(0.8), Inches(0.6), Inches(1.8)]
-    
-    d_headers = ["就餐场景与餐厅", "推荐特色菜品", "现场原价", "券后优惠价", "单餐立省", "买券与核销平台"]
-    for idx, h in enumerate(d_headers):
-        c = t_deal.cell(0, idx)
-        c.width = d_widths[idx]
-        set_cell_background(c, "F1F5F9")
-        set_cell_margins(c, top=100, bottom=100, left=60, right=60)
-        set_cell_border(c, top=dict(sz=4, color="CBD5E1"), bottom=dict(sz=6, color="94A3B8"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
-        p = c.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        r = p.add_run(h)
-        r.font.bold = True
-        r.font.size = Pt(8.5)
-
-    for r_idx, row in enumerate(data["deals"]):
-        bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
-        for c_idx, val in enumerate(row):
-            c = t_deal.cell(r_idx + 1, c_idx)
-            c.width = d_widths[c_idx]
-            set_cell_background(c, bg)
-            set_cell_margins(c, top=60, bottom=60, left=60, right=60)
-            set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+    deals = data.get("deals", [])
+    if deals:
+        add_heading("全行程老饕美食 ＆「老少精准分级点餐」矩阵", "🥢")
+        t_deal = doc.add_table(rows=len(deals) + 1, cols=6)
+        t_deal.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_deal.autofit = False
+        d_widths = [Inches(1.3), Inches(1.6), Inches(0.7), Inches(0.8), Inches(0.6), Inches(1.8)]
+        
+        d_headers = ["用餐场景 / 人群", "推荐特色菜品", "参考原价", "优惠/券后价", "单餐节约", "买券 / 点单技巧"]
+        for idx, h in enumerate(d_headers):
+            c = t_deal.cell(0, idx)
+            c.width = d_widths[idx]
+            set_cell_background(c, "F1F5F9")
+            set_cell_margins(c, top=100, bottom=100, left=60, right=60)
+            set_cell_border(c, top=dict(sz=4, color="CBD5E1"), bottom=dict(sz=6, color="94A3B8"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
             p = c.paragraphs[0]
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(0)
-            r = p.add_run(val)
-            r.font.size = Pt(8)
-            if c_idx == 3 or c_idx == 4:
-                r.font.bold = True
-                r.font.color.rgb = RGBColor(225, 29, 72)
+            r = p.add_run(h)
+            r.font.bold = True
+            r.font.size = Pt(8.5)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(4)
+        for r_idx, row in enumerate(deals):
+            bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
+            for c_idx in range(6):
+                val = row[c_idx] if c_idx < len(row) else ""
+                c = t_deal.cell(r_idx + 1, c_idx)
+                c.width = d_widths[c_idx]
+                set_cell_background(c, bg)
+                set_cell_margins(c, top=60, bottom=60, left=60, right=60)
+                set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                r = p.add_run(str(val))
+                r.font.size = Pt(8)
+                if c_idx in (3, 4):
+                    r.font.bold = True
+                    r.font.color.rgb = RGBColor(225, 29, 72)
+
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
     # 6. Checklist
-    add_heading("行前打勾清单（已为您勾选备齐项目）", "🛒")
-    t_chk = doc.add_table(rows=(len(data["checklist"]) + 1) // 2, cols=2)
-    t_chk.alignment = WD_TABLE_ALIGNMENT.CENTER
-    t_chk.autofit = False
-    
-    for idx, item in enumerate(data["checklist"]):
-        r_i = idx // 2
-        c_i = idx % 2
-        c = t_chk.cell(r_i, c_i)
-        c.width = Inches(3.4)
-        set_cell_background(c, "F8FAFC")
-        set_cell_margins(c, top=60, bottom=60, left=100, right=100)
-        set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
-        p = c.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        r_box = p.add_run("☑ ")
-        r_box.font.bold = True
-        r_box.font.color.rgb = RGBColor(22, 163, 74)
-        r_txt = p.add_run(item)
-        r_txt.font.size = Pt(8.5)
-        r_txt.font.color.rgb = RGBColor(51, 65, 85)
+    checklist = data.get("checklist", [])
+    if checklist:
+        add_heading("行前打勾清单（已为您逐项核验备齐）", "🛒")
+        chk_rows = max(1, (len(checklist) + 1) // 2)
+        t_chk = doc.add_table(rows=chk_rows, cols=2)
+        t_chk.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_chk.autofit = False
+        
+        for idx, item in enumerate(checklist):
+            r_i = idx // 2
+            c_i = idx % 2
+            if r_i < chk_rows:
+                c = t_chk.cell(r_i, c_i)
+                c.width = Inches(3.4)
+                set_cell_background(c, "F8FAFC")
+                set_cell_margins(c, top=60, bottom=60, left=100, right=100)
+                set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                r_box = p.add_run("☑ ")
+                r_box.font.bold = True
+                r_box.font.color.rgb = RGBColor(22, 163, 74)
+                r_txt = p.add_run(str(item))
+                r_txt.font.size = Pt(8.5)
+                r_txt.font.color.rgb = RGBColor(51, 65, 85)
 
-    doc.add_paragraph().paragraph_format.space_after = Pt(6)
+        doc.add_paragraph().paragraph_format.space_after = Pt(6)
 
     # Ensure output parent dir exists
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
