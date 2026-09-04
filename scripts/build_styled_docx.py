@@ -1,7 +1,7 @@
 """
 Publication-Grade Word Document Generator
-Creates beautifully formatted Word documents with table callouts, cards, and zebra tables.
-Robust against variable column counts, empty sections, and dynamic family demographics.
+Creates beautifully formatted Word documents with table callouts, cards, zebra tables, and souvenir matrices.
+Robust against variable column counts, empty sections, and dynamic family/couple demographics.
 """
 import os
 import sys
@@ -72,7 +72,7 @@ def build_docx(input_path, output_path):
     p = c_hero.paragraphs[0]
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(2)
-    r = p.add_run(f"🏰 {data.get('dates', '2026 行程规划')} · 家庭定制度假")
+    r = p.add_run(f"🏰 {data.get('dates', '2026 行程规划')} · 精选定制度假")
     r.font.size = Pt(10)
     r.font.bold = True
     r.font.color.rgb = RGBColor(254, 205, 211)
@@ -80,7 +80,7 @@ def build_docx(input_path, output_path):
     p2 = c_hero.add_paragraph()
     p2.paragraph_format.space_before = Pt(2)
     p2.paragraph_format.space_after = Pt(4)
-    r2 = p2.add_run(data.get("title", "家庭亲子多代旅行保姆级规划"))
+    r2 = p2.add_run(data.get("title", "旅行度假保姆级规划"))
     r2.font.size = Pt(16)
     r2.font.bold = True
     r2.font.color.rgb = RGBColor(255, 255, 255)
@@ -88,7 +88,7 @@ def build_docx(input_path, output_path):
     p3 = c_hero.add_paragraph()
     p3.paragraph_format.space_before = Pt(0)
     p3.paragraph_format.space_after = Pt(0)
-    r3 = p3.add_run(data.get("subtitle", "轻松慢游 · 保证午休 · 老少胃口兼顾"))
+    r3 = p3.add_run(data.get("subtitle", "轻松慢游 · 舒适休整 · 老少/双人惬意探索"))
     r3.font.size = Pt(9.5)
     r3.font.color.rgb = RGBColor(203, 213, 225)
 
@@ -125,13 +125,13 @@ def build_docx(input_path, output_path):
     # Core principle callout
     add_callout([
         ("💡 核心出行原则：", True, 10, RGBColor(225, 29, 72)),
-        ("不赶路、不特种兵，每日避开正午烈日安排深度午休/静谧休整，推车友好、老少胃口兼顾、沉浸式非遗探索！", False, 9.5, RGBColor(71, 85, 105))
+        ("不赶路、不特种兵，合理规划节奏与休整，兼顾品质住宿、地道老饕美食与高品质在地文化体验！", False, 9.5, RGBColor(71, 85, 105))
     ])
 
     # 2. Outfits
     outfits = data.get("outfits", [])
     if outfits:
-        add_heading(f"全家 {len(outfits)} 人穿搭卡片（色彩协调 · 拍照大片）", "👗")
+        add_heading(f"出行 {len(outfits)} 人穿搭卡片（色彩美学 · 拍照高级）", "👗")
         t_outfit = doc.add_table(rows=1, cols=len(outfits))
         t_outfit.alignment = WD_TABLE_ALIGNMENT.CENTER
         t_outfit.autofit = False
@@ -171,7 +171,7 @@ def build_docx(input_path, output_path):
     # 3. Advance prep table
     prep_rows = data.get("prep_rows", [])
     if prep_rows:
-        add_heading("行前关键节点与「预约 / 抢购时间表」", "⏰")
+        add_heading("行前关键节点与准备时间表", "⏰")
         t_prep = doc.add_table(rows=len(prep_rows) + 1, cols=4)
         t_prep.alignment = WD_TABLE_ALIGNMENT.CENTER
         t_prep.autofit = False
@@ -254,13 +254,13 @@ def build_docx(input_path, output_path):
     # 5. Dining deals table
     deals = data.get("deals", [])
     if deals:
-        add_heading("全行程老饕美食 ＆「老少精准分级点餐」矩阵", "🥢")
+        add_heading("在地特色美食 ＆「老饕高分餐厅」指南", "🥢")
         t_deal = doc.add_table(rows=len(deals) + 1, cols=6)
         t_deal.alignment = WD_TABLE_ALIGNMENT.CENTER
         t_deal.autofit = False
         d_widths = [Inches(1.3), Inches(1.6), Inches(0.7), Inches(0.8), Inches(0.6), Inches(1.8)]
         
-        d_headers = ["用餐场景 / 人群", "推荐特色菜品", "参考原价", "优惠/券后价", "单餐节约", "买券 / 点单技巧"]
+        d_headers = ["餐厅名称与地点", "推荐特色硬菜", "参考消费", "优惠/预订", "推荐指数", "氛围与订座电话"]
         for idx, h in enumerate(d_headers):
             c = t_deal.cell(0, idx)
             c.width = d_widths[idx]
@@ -294,7 +294,85 @@ def build_docx(input_path, output_path):
 
         doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
-    # 6. Checklist
+    # 6. Parking (ONLY if parking data exists)
+    parking = data.get("parking", [])
+    if parking:
+        add_heading("精准停车与自驾导航表", "🅿️")
+        t_park = doc.add_table(rows=len(parking) + 1, cols=5)
+        t_park.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_park.autofit = False
+        p_w = [Inches(1.3), Inches(1.2), Inches(1.5), Inches(1.0), Inches(1.8)]
+        p_hdrs = ["目的地", "推荐停车场", "导航关键字", "收费标准", "核心优势与设施"]
+        for idx, h in enumerate(p_hdrs):
+            c = t_park.cell(0, idx)
+            c.width = p_w[idx]
+            set_cell_background(c, "F1F5F9")
+            set_cell_margins(c, top=100, bottom=100, left=60, right=60)
+            set_cell_border(c, top=dict(sz=4, color="CBD5E1"), bottom=dict(sz=6, color="94A3B8"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+            p = c.paragraphs[0]
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            r = p.add_run(h)
+            r.font.bold = True
+            r.font.size = Pt(8.5)
+
+        for r_idx, row in enumerate(parking):
+            bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
+            for c_idx in range(5):
+                val = row[c_idx] if c_idx < len(row) else ""
+                c = t_park.cell(r_idx + 1, c_idx)
+                c.width = p_w[c_idx]
+                set_cell_background(c, bg)
+                set_cell_margins(c, top=60, bottom=60, left=60, right=60)
+                set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                r = p.add_run(str(val))
+                r.font.size = Pt(8)
+
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
+
+    # 7. Souvenirs section (ONLY if souvenirs data exists)
+    souvenirs = data.get("souvenirs", [])
+    if souvenirs:
+        add_heading("特色纪念品 ＆ 伴手礼淘货全攻略", "🎁")
+        s_rows = max(1, (len(souvenirs) + 1) // 2)
+        t_souv = doc.add_table(rows=s_rows, cols=2)
+        t_souv.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_souv.autofit = False
+        
+        for idx, (s_name, s_desc) in enumerate(souvenirs):
+            r_i = idx // 2
+            c_i = idx % 2
+            if r_i < s_rows:
+                c = t_souv.cell(r_i, c_i)
+                c.width = Inches(3.4)
+                set_cell_background(c, "FFFBEB")
+                set_cell_margins(c, top=80, bottom=80, left=100, right=100)
+                set_cell_border(c, top=dict(sz=4, color="FDE68A"), bottom=dict(sz=4, color="FDE68A"), left=dict(sz=4, color="FDE68A"), right=dict(sz=4, color="FDE68A"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(2)
+                r_tag = p.add_run("【必淘】")
+                r_tag.font.bold = True
+                r_tag.font.size = Pt(8.5)
+                r_tag.font.color.rgb = RGBColor(180, 83, 9)
+                r_title = p.add_run(f" {s_name}")
+                r_title.font.bold = True
+                r_title.font.size = Pt(9.5)
+                r_title.font.color.rgb = RGBColor(15, 23, 42)
+                
+                pd = c.add_paragraph()
+                pd.paragraph_format.space_before = Pt(0)
+                pd.paragraph_format.space_after = Pt(0)
+                rd = pd.add_run(str(s_desc))
+                rd.font.size = Pt(8.5)
+                rd.font.color.rgb = RGBColor(71, 85, 105)
+
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
+
+    # 8. Checklist
     checklist = data.get("checklist", [])
     if checklist:
         add_heading("行前打勾清单（已为您逐项核验备齐）", "🛒")
