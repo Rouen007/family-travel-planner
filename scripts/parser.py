@@ -128,14 +128,25 @@ def parse_travel_markdown(file_path):
         ]
         s_idx = 0
         for line in m_outfits_sec.group(1).split("\n"):
-            m_top = re.match(r"^[-*]\s+\*\*(.+?)\*\*[：:]?", line)
+            m_top = re.match(r"^[-*]\s+(.*?)\*\*(.+?)\*\*[：:]?", line)
             if m_top:
                 if cur_card:
                     custom_outfits.append(cur_card)
-                c_name = m_top.group(1).strip()
+                prefix = m_top.group(1).strip()
+                core = m_top.group(2).strip()
+                full_name = f"{prefix} {core}".strip() if prefix else core
+
                 st = card_styles[s_idx % len(card_styles)]
                 s_idx += 1
-                c_tag = "浪漫出圈 · 高甜" if "公主" in c_name or "女" in c_name else ("帅气护花 · 型男" if "骑士" in c_name or "男" in c_name else st["default_tag"])
+
+                m_tag = re.search(r"[（\(](.+?)[）\)]", full_name)
+                if m_tag:
+                    c_tag = m_tag.group(1).strip()
+                    c_name = re.sub(r"[（\(].+?[）\)]", "", full_name).strip()
+                else:
+                    c_name = full_name
+                    c_tag = "浪漫出圈 · 高甜" if ("公主" in c_name or "女" in c_name) else ("帅气护花 · 型男" if ("骑士" in c_name or "男" in c_name) else st["default_tag"])
+
                 cur_card = {
                     "name": c_name,
                     "tag": c_tag,
@@ -234,11 +245,15 @@ def parse_travel_markdown(file_path):
             ]
     else:
         if any(k in content for k in ["迪士尼", "乐园", "Disney", "环球"]):
+            hotel_val = "度假区万怡酒店" if "万怡" in content else "主题乐园/度假酒店"
+            hotel_desc = "免费停车+班车直达" if "万怡" in content else "便捷往返+轻松休整"
+            ev_val = "极氪极充 18分钟" if ("极充" in content or "极氪" in content) else "自驾畅行/包车"
+            ev_desc = "顺路满电+零续航焦虑" if ("极充" in content or "极氪" in content) else "沿途看景+轻松休整"
             data["stats"] = [
-                {"label": "🏨 度假大本营", "val": "主题乐园/度假酒店", "desc": "便捷往返+轻松休整"},
-                {"label": "🎢 欢乐王牌", "val": "经典必刷大项目", "desc": "矿山车+加勒比海盗"},
-                {"label": "📸 梦幻机位", "val": "童话城堡大片", "desc": "奇想花园+璀璨烟花"},
-                {"label": "👗 亲子穿搭", "val": "经典红白米奇系", "desc": "色彩统一+活力出圈"}
+                {"label": "🏨 度假大本营", "val": hotel_val, "desc": hotel_desc},
+                {"label": "🚗 纯电自驾", "val": ev_val, "desc": ev_desc},
+                {"label": "👶 亲子慢游", "val": "2岁女宝+50+外婆", "desc": "黄金午睡+无障碍动线"},
+                {"label": "👗 亲子穿搭", "val": "红白黑经典系列", "desc": "视觉统一+高级出片"}
             ]
 
         if custom_outfits:
