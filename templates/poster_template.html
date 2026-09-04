@@ -246,8 +246,8 @@
   </div>
   {% endif %}
 
-  <!-- 餐饮美食总表 -->
-  {% if data.deals %}
+  <!-- 餐饮美食总表（100% 动态表头与内容自适应） -->
+  {% if data.dining_rows %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
@@ -260,18 +260,17 @@
     <table class="deal-table">
       <thead>
         <tr>
-          <th>餐厅名称与地点</th><th>推荐特色硬菜</th><th>参考消费</th><th>优惠/预订</th><th>推荐指数</th><th>氛围与订座电话</th>
+          {% for h in data.dining_headers %}
+          <th>{{ h }}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
-        {% for d in data.deals %}
+        {% for row in data.dining_rows %}
         <tr>
-          <td><b>{{ d[0]|replace("\n", "<br>")|safe }}</b></td>
-          <td>{{ d[1] }}</td>
-          <td><span class="price-old">{{ d[2] }}</span></td>
-          <td><span class="price-new">{{ d[3] }}</span></td>
-          <td><span class="save-badge">{{ d[4] }}</span></td>
-          <td>{{ d[5] }}</td>
+          {% for cell in row %}
+          <td>{{ cell|replace("\n", "<br>")|safe }}</td>
+          {% endfor %}
         </tr>
         {% endfor %}
       </tbody>

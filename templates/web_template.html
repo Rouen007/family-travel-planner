@@ -69,30 +69,24 @@
     </div>
     {% endif %}
 
-    <!-- Deals -->
-    {% if data.deals %}
+    <!-- Deals (100% Dynamic Headers & Rows) -->
+    {% if data.dining_rows %}
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
       <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><span>🍷</span> 在地特色美食 ＆ 高分餐厅</h2>
       <table class="w-full text-xs text-left">
         <thead>
           <tr class="bg-slate-100 text-slate-700">
-            <th class="p-2.5 rounded-l-lg">餐厅名称与地点</th>
-            <th class="p-2.5">推荐硬菜</th>
-            <th class="p-2.5">参考消费</th>
-            <th class="p-2.5">优惠/预订</th>
-            <th class="p-2.5">推荐指数</th>
-            <th class="p-2.5 rounded-r-lg">订座电话</th>
+            {% for h in data.dining_headers %}
+            <th class="p-2.5 font-bold">{{ h }}</th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          {% for d in data.deals %}
+          {% for row in data.dining_rows %}
           <tr>
-            <td class="p-2.5 font-bold">{{ d[0] }}</td>
-            <td class="p-2.5 text-slate-600">{{ d[1] }}</td>
-            <td class="p-2.5 text-slate-400">{{ d[2] }}</td>
-            <td class="p-2.5 text-rose-600 font-bold">{{ d[3] }}</td>
-            <td class="p-2.5"><span class="bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded font-bold">{{ d[4] }}</span></td>
-            <td class="p-2.5 text-slate-600">{{ d[5] }}</td>
+            {% for cell in row %}
+            <td class="p-2.5 text-slate-700">{{ cell|replace("\n", "<br>")|safe }}</td>
+            {% endfor %}
           </tr>
           {% endfor %}
         </tbody>

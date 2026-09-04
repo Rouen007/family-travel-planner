@@ -1,6 +1,6 @@
 """
 Universal Destination-Agnostic Travel Markdown Parser
-Intelligently extracts sections, tables, family age cohorts, timelines, souvenirs, and metadata from ANY travel markdown plan.
+Intelligently extracts sections, 100% dynamic tables with headers, family age cohorts, timelines, souvenirs, and metadata.
 Zero-recursion safe, robust, and supports couples, solo, multi-gen family, and kid-friendly trips.
 """
 import re
@@ -16,7 +16,7 @@ def _get_default_generic_data():
             {"label": "🏨 浪漫大本营", "val": "精选品质酒店", "desc": "舒适景观+地理便捷"},
             {"label": "🚗 交通出行", "val": "私享专车/自驾", "desc": "行程自由+沿途看景"},
             {"label": "🍷 品质格调", "val": "地道老饕体验", "desc": "特色正餐+在地文化"},
-            {"label": "👗 全家穿搭", "val": "协调视觉色系", "desc": "高级审美+唯美出片"}
+            {"label": "👗 穿搭风格", "val": "协调视觉色系", "desc": "高级审美+唯美出片"}
         ],
         "outfits": [
             {"name": "👩 女士 / 女友", "tag": "优雅知性 · 唯美", "bg": "FFF5F5", "border": "FECDD3", "desc": "• 主装：亮色羊绒大衣 / 复古法式长裙\n• 配饰：贝雷帽 / 墨镜 / 精致皮包\n• 鞋履：舒适健步软皮靴 / 经典单鞋"},
@@ -29,7 +29,7 @@ def _get_default_generic_data():
             ("D-2", "外汇准备与行李打包", "银行预约换新版美金", "带好 Visa/Master 双币卡，准备崭新无瑕疵美钞。"),
             ("出行当天", "准时启程", "航旅纵横 / 实时导航", "提前 2.5 小时抵达机场办理值机行李托运。")
         ],
-                "days": [
+        "days": [
             {
                 "day_tag": "Day 1",
                 "day_title": "启程抵达 ➔ 办理入住 ➔ 深度午休 ➔ 悠闲夜游",
@@ -63,7 +63,11 @@ def _get_default_generic_data():
                 ]
             }
         ],
+        "dining_headers": ["餐厅名称与地点", "招牌特色硬菜", "参考消费", "推荐指数", "订座/咨询电话"],
+        "dining_rows": [],
         "deals": [],
+        "parking_headers": ["目的地", "推荐停车场", "导航关键字", "收费标准", "核心优势与设施"],
+        "parking_rows": [],
         "parking": [],
         "souvenirs": [],
         "checklist": [
@@ -76,7 +80,7 @@ def _get_default_generic_data():
             "提前下载手机打车软件【Yandex Go】（在第比利斯打车极其便宜方便，一口价防宰客）"
         ],
         "footer": {
-            "wish": "祝恋人/全家旅途顺畅 · 拍照绝美出片 · 留下最美好的浪漫回忆！✨",
+            "wish": "祝旅途顺畅 · 拍照绝美出片 · 留下最美好的浪漫回忆！✨",
             "hotel": "住宿大本营：请确认酒店名称与前台联系电话",
             "hotlines": ["🇨🇳 中国驻当地使领馆领保专线", "🌐 外交部全球领事保护：+86 10 12308", "🚨 当地紧急求助与急救专线：112"]
         }
@@ -232,23 +236,24 @@ def parse_travel_markdown(file_path):
         data["days"] = parsed_days
 
     # 4. Dynamic Markdown Table Parser (Generic Helper)
-    def extract_markdown_table(sec_pattern):
+    def extract_markdown_table_with_headers(sec_pattern):
         m_sec = re.search(sec_pattern, content, re.I)
-        if not m_sec: return []
+        if not m_sec: return [], []
         sec_text = m_sec.group(1)
         table_lines = [l.strip() for l in sec_text.split("\n") if l.strip().startswith("|") and l.strip().endswith("|")]
-        if len(table_lines) < 3: return []
+        if len(table_lines) < 3: return [], []
+        headers = [c.strip() for c in table_lines[0].split("|")[1:-1]]
         rows = []
         for l in table_lines[2:]:
             cols = [c.strip() for c in l.split("|")[1:-1]]
             if any(cols):
                 rows.append(cols)
-        return rows
+        return headers, rows
 
-    # 5. Dynamic Prep Extraction (Table or Bullet Points)
-    prep_table = extract_markdown_table(r"##\s*[^#\n]*?(?:行前|抢票|准备|免签|外汇)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
-    if prep_table:
-        data["prep_rows"] = [tuple(r[:4]) if len(r) >= 4 else tuple(r + [""] * (4 - len(r))) for r in prep_table]
+    # 5. Dynamic Prep Extraction
+    p_headers, p_rows = extract_markdown_table_with_headers(r"##\s*[^#\n]*?(?:行前|抢票|准备|免签|外汇)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+    if p_rows:
+        data["prep_rows"] = [tuple(r[:4]) if len(r) >= 4 else tuple(r + [""] * (4 - len(r))) for r in p_rows]
     else:
         m_prep_sec = re.search(r"##\s*[^#\n]*?(?:行前|抢票|准备|免签)[^#\n]*?\n([\s\S]*?)(?=##|\Z)", content, re.I)
         if m_prep_sec:
@@ -265,33 +270,38 @@ def parse_travel_markdown(file_path):
             if p_bullets:
                 data["prep_rows"] = p_bullets
 
-    # 6. Dynamic Deals & Dining Extraction
-    dining_table = extract_markdown_table(r"##\s*[^#\n]*?(?:美食|餐厅|微醺|餐饮|省钱)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
-    if dining_table:
-        data["deals"] = [tuple(r[:6]) if len(r) >= 6 else tuple(r + [""] * (6 - len(r))) for r in dining_table]
+    # 6. Dynamic Deals & Dining Extraction (100% Dynamic Headers & Rows)
+    d_headers, d_rows = extract_markdown_table_with_headers(r"##\s*[^#\n]*?(?:美食|餐厅|微醺|餐饮|省钱)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+    if d_rows:
+        data["dining_headers"] = d_headers
+        data["dining_rows"] = d_rows
+        data["deals"] = d_rows
+    else:
+        data["dining_headers"] = ["餐厅名称与地点", "招牌必点特色", "参考消费", "推荐指数", "订座/咨询电话"]
+        data["dining_rows"] = []
+        data["deals"] = []
 
     # 7. Robust Dynamic Checklist Extraction
-    # Scan content for checkboxes or checklist sections
     chk_items = []
     for line in content.split("\n"):
         line = line.strip()
         if line.startswith(("- [ ]", "- [x]", "- [X]")):
             clean = re.sub(r"^-\s*\[[ xX]\]\s*", "", line).strip()
             clean = clean.replace("**", "").strip()
-            if clean:
-                chk_items.append(clean)
+            if clean: chk_items.append(clean)
 
     if chk_items:
         data["checklist"] = chk_items
 
     # 8. Dynamic Parking / Transport Extraction (ONLY if parking table exists)
-    if "停车" in content or "车位" in content:
-        park_table = extract_markdown_table(r"##\s*[^#\n]*?(?:停车|地库|车位)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
-        if park_table:
-            data["parking"] = [tuple(r[:5]) if len(r) >= 5 else tuple(r + [""] * (5 - len(r))) for r in park_table]
-        else:
-            data["parking"] = []
+    pk_headers, pk_rows = extract_markdown_table_with_headers(r"##\s*[^#\n]*?(?:停车|地库|车位)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+    if pk_rows:
+        data["parking_headers"] = pk_headers
+        data["parking_rows"] = pk_rows
+        data["parking"] = pk_rows
     else:
+        data["parking_headers"] = []
+        data["parking_rows"] = []
         data["parking"] = []
 
     # 9. Dynamic Souvenirs & Shopping Extraction
@@ -300,7 +310,7 @@ def parse_travel_markdown(file_path):
     if m_souv:
         for line in m_souv.group(1).split("\n"):
             line = line.strip()
-            if line.startswith(("-", "*", "1.", "2.", "3.", "4.", "5.")):
+            if line.startswith(("-", "*", "1.", "2.", "3.", "4.", "5.", "6.")):
                 clean = re.sub(r"^(?:[-*]|\d+\.)\s*", "", line).strip()
                 if clean and not clean.startswith("#"):
                     parts = re.split(r"[：:]", clean, maxsplit=1)

@@ -251,19 +251,20 @@ def build_docx(input_path, output_path):
             
             doc.add_paragraph().paragraph_format.space_after = Pt(3)
 
-    # 5. Dining deals table
-    deals = data.get("deals", [])
-    if deals:
+    # 5. Dining deals table (100% Dynamic Headers & Rows)
+    dining_headers = data.get("dining_headers", [])
+    dining_rows = data.get("dining_rows", [])
+    if dining_rows and dining_headers:
         add_heading("在地特色美食 ＆「老饕高分餐厅」指南", "🥢")
-        t_deal = doc.add_table(rows=len(deals) + 1, cols=6)
+        num_cols = len(dining_headers)
+        t_deal = doc.add_table(rows=len(dining_rows) + 1, cols=num_cols)
         t_deal.alignment = WD_TABLE_ALIGNMENT.CENTER
         t_deal.autofit = False
-        d_widths = [Inches(1.3), Inches(1.6), Inches(0.7), Inches(0.8), Inches(0.6), Inches(1.8)]
         
-        d_headers = ["餐厅名称与地点", "推荐特色硬菜", "参考消费", "优惠/预订", "推荐指数", "氛围与订座电话"]
-        for idx, h in enumerate(d_headers):
+        col_w = Inches(6.8 / num_cols)
+        for idx, h in enumerate(dining_headers):
             c = t_deal.cell(0, idx)
-            c.width = d_widths[idx]
+            c.width = col_w
             set_cell_background(c, "F1F5F9")
             set_cell_margins(c, top=100, bottom=100, left=60, right=60)
             set_cell_border(c, top=dict(sz=4, color="CBD5E1"), bottom=dict(sz=6, color="94A3B8"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
@@ -274,23 +275,22 @@ def build_docx(input_path, output_path):
             r.font.bold = True
             r.font.size = Pt(8.5)
 
-        for r_idx, row in enumerate(deals):
+        for r_idx, row in enumerate(dining_rows):
             bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
-            for c_idx in range(6):
+            for c_idx in range(num_cols):
                 val = row[c_idx] if c_idx < len(row) else ""
                 c = t_deal.cell(r_idx + 1, c_idx)
-                c.width = d_widths[c_idx]
+                c.width = col_w
                 set_cell_background(c, bg)
                 set_cell_margins(c, top=60, bottom=60, left=60, right=60)
                 set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
                 p = c.paragraphs[0]
                 p.paragraph_format.space_before = Pt(0)
                 p.paragraph_format.space_after = Pt(0)
-                r = p.add_run(str(val))
+                r = p.add_run(str(val).replace("<br>", "\n").replace("**", ""))
                 r.font.size = Pt(8)
-                if c_idx in (3, 4):
+                if c_idx == 0:
                     r.font.bold = True
-                    r.font.color.rgb = RGBColor(225, 29, 72)
 
         doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
