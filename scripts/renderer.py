@@ -1,7 +1,7 @@
 """
 Universal Zero-Dependency Template Renderer for Family Travel Planner
 Uses Jinja2 if available; otherwise uses a robust AST token-based micro-engine
-with 100% template compatibility.
+supporting variables, nested for-loops, if conditions, and filters.
 """
 import re
 
@@ -14,8 +14,7 @@ def render_template(template_content, context):
         return _micro_render(template_content, context)
 
 def _tokenize(s):
-    tokens = [t for t in re.split(r'(\{%.*?%\}|\{\{.*?\}\})', s) if t]
-    return tokens
+    return [t for t in re.split(r'(\{%.*?%\}|\{\{.*?\}\})', s) if t]
 
 def _micro_render(template_str, context):
     tokens = _tokenize(template_str)
@@ -28,8 +27,30 @@ def _render_tokens(tokens, idx, ctx):
         token = tokens[idx]
         if token.startswith('{%'):
             inner = token[2:-2].strip()
-            if inner == 'endfor':
+            if inner in ('endfor', 'endif'):
                 return ''.join(out), idx
+            elif inner.startswith('if '):
+                cond_expr = inner[3:].strip()
+                # collect if body tokens
+                if_body_tokens = []
+                depth = 1
+                idx += 1
+                while idx < len(tokens):
+                    t = tokens[idx]
+                    if t.startswith('{%'):
+                        t_in = t[2:-2].strip()
+                        if t_in.startswith('if '): depth += 1
+                        elif t_in == 'endif':
+                            depth -= 1
+                            if depth == 0: break
+                    if_body_tokens.append(t)
+                    idx += 1
+                
+                # evaluate condition
+                cond_val = _eval_expr(cond_expr, ctx)
+                if cond_val:
+                    rendered_body, _ = _render_tokens(if_body_tokens, 0, ctx)
+                    out.append(rendered_body)
             elif inner.startswith('for '):
                 m = re.match(r'for\s+([^%]+?)\s+in\s+([^%]+)', inner)
                 if not m:

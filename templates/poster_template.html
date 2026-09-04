@@ -35,7 +35,7 @@
     margin-bottom: 16px;
     border: 1px solid rgba(255,255,255,0.2);
   }
-  .hero-title { font-size: 42px; font-weight: 900; line-height: 1.25; margin-bottom: 12px; }
+  .hero-title { font-size: 40px; font-weight: 900; line-height: 1.25; margin-bottom: 12px; }
   .hero-subtitle { font-size: 20px; color: #CBD5E1; font-weight: 500; margin-bottom: 28px; }
   .hero-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .hero-stat-card {
@@ -73,7 +73,7 @@
   .section-title { font-size: 28px; font-weight: 900; color: #0F172A; }
   .section-tag { font-size: 15px; font-weight: 700; padding: 6px 16px; border-radius: 30px; }
 
-  .outfit-schematic-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .outfit-schematic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
   .cartoon-character-card {
     background: #F8FAFC; border-radius: 24px; padding: 24px 18px; text-align: center;
     border: 2px solid; display: flex; flex-direction: column; justify-content: space-between;
@@ -142,7 +142,7 @@
 <body>
 
   <div class="hero-banner">
-    <div class="badge-tag">🏰 {{ data.dates }} · 家庭自驾定制</div>
+    <div class="badge-tag">🏰 {{ data.dates }} · 精选定制度假</div>
     <h1 class="hero-title">{{ data.title }}</h1>
     <p class="hero-subtitle">{{ data.subtitle }}</p>
     
@@ -158,13 +158,14 @@
   </div>
 
   <!-- 穿搭板块 -->
+  {% if data.outfits %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
         <div class="section-icon" style="background:#FFE4E6; color:#E11D48;">🎨</div>
-        <div class="section-title">全家协调穿搭卡片（已买实物与色块搭配）</div>
+        <div class="section-title">出行协调穿搭卡片（色彩美学 · 拍照高级）</div>
       </div>
-      <div class="section-tag" style="background:#FFF1F2; color:#BE123C; border:1px solid #FECDD3;">一目了然 · 高级出片</div>
+      <div class="section-tag" style="background:#FFF1F2; color:#BE123C; border:1px solid #FECDD3;">视觉统一 · 大片出圈</div>
     </div>
 
     <div class="outfit-schematic-grid">
@@ -180,21 +181,23 @@
       {% endfor %}
     </div>
   </div>
+  {% endif %}
 
-  <!-- 抢票时间表 -->
+  <!-- 抢票/准备时间表 -->
+  {% if data.prep_rows %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
         <div class="section-icon" style="background:#EEF2FF; color:#4F46E5;">⏰</div>
-        <div class="section-title">行前关键节点与「门票抢购 / 预约时间表」</div>
+        <div class="section-title">行前关键节点与准备时间表</div>
       </div>
-      <div class="section-tag" style="background:#EEF2FF; color:#4F46E5; border:1px solid #C7D2FE;">重要提醒 · 设好闹钟</div>
+      <div class="section-tag" style="background:#EEF2FF; color:#4F46E5; border:1px solid #C7D2FE;">重要备忘 · 提早安排</div>
     </div>
 
     <table class="deal-table">
       <thead>
         <tr>
-          <th>时间节点</th><th>事项与目标</th><th>预约 / 抢购平台</th><th>核心实操要点</th>
+          <th>时间节点</th><th>事项与目标</th><th>预约 / 办理平台</th><th>核心实操要点</th>
         </tr>
       </thead>
       <tbody>
@@ -209,8 +212,10 @@
       </tbody>
     </table>
   </div>
+  {% endif %}
 
   <!-- 每日行程 -->
+  {% if data.days %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
@@ -239,21 +244,23 @@
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 
-  <!-- 餐饮省钱矩阵 -->
+  <!-- 餐饮美食总表 -->
+  {% if data.deals %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
-        <div class="section-icon" style="background:#FEF3C7; color:#D97706;">💰</div>
-        <div class="section-title">餐饮美食 ＆「大众点评 ＋ 闲鱼省钱买券」总表</div>
+        <div class="section-icon" style="background:#FEF3C7; color:#D97706;">🍷</div>
+        <div class="section-title">在地特色美食 ＆「老饕高分餐厅」指南</div>
       </div>
-      <div class="section-tag" style="background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;">全网买券省钱</div>
+      <div class="section-tag" style="background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;">地道风味 · 仪式感微醺</div>
     </div>
 
     <table class="deal-table">
       <thead>
         <tr>
-          <th>就餐场景与餐厅</th><th>推荐特色菜品</th><th>现场原价</th><th>券后优惠价</th><th>单餐立省</th><th>买券与核销平台</th>
+          <th>餐厅名称与地点</th><th>推荐特色硬菜</th><th>参考消费</th><th>优惠/预订</th><th>推荐指数</th><th>氛围与订座电话</th>
         </tr>
       </thead>
       <tbody>
@@ -270,13 +277,15 @@
       </tbody>
     </table>
   </div>
+  {% endif %}
 
-  <!-- 精准停车导航 -->
+  <!-- 仅在有停车需求时渲染停车导航 -->
+  {% if data.parking %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
         <div class="section-icon" style="background:#CCFBF1; color:#0D9488;">🅿️</div>
-        <div class="section-title">四大精准停车导航总表</div>
+        <div class="section-title">精准停车与自驾导航表</div>
       </div>
       <div class="section-tag" style="background:#F0FDFA; color:#0D9488; border:1px solid #99F6E4;">车位充足 · 补能无忧</div>
     </div>
@@ -296,15 +305,42 @@
       </tbody>
     </table>
   </div>
+  {% endif %}
+
+  <!-- 特色纪念品与伴手礼指南 -->
+  {% if data.souvenirs %}
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-icon" style="background:#FEF3C7; color:#D97706;">🎁</div>
+        <div class="section-title">特色纪念品 ＆ 伴手礼淘货全攻略</div>
+      </div>
+      <div class="section-tag" style="background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;">高加索风物 · 独家珍藏</div>
+    </div>
+
+    <div class="check-grid">
+      {% for s_name, s_desc in data.souvenirs %}
+      <div class="check-item" style="flex-direction:column; align-items:flex-start; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="background:#FDE68A; color:#92400E; font-size:12px; font-weight:800; padding:2px 8px; border-radius:6px;">必淘</span>
+          <span style="font-size:16px; font-weight:800; color:#0F172A;">{{ s_name }}</span>
+        </div>
+        <div style="font-size:14px; color:#64748B; line-height:1.45;">{{ s_desc }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- 行前打勾清单 -->
+  {% if data.checklist %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
         <div class="section-icon" style="background:#DCFCE7; color:#16A34A;">🛒</div>
         <div class="section-title">行前打勾清单</div>
       </div>
-      <div class="section-tag" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0;">逐项核对</div>
+      <div class="section-tag" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0;">逐项核验 · 放心启程</div>
     </div>
 
     <div class="check-grid">
@@ -313,11 +349,12 @@
       {% endfor %}
     </div>
   </div>
+  {% endif %}
 
   <!-- 底部信息 -->
   <div class="footer-card">
     <div style="font-size:19px; font-weight:800; color:#FFFFFF; margin-bottom:8px;">{{ data.footer.wish }}</div>
-    <div style="font-size:15px; color:#CBD5E1; margin-bottom:12px;">大本营：{{ data.footer.hotel }}</div>
+    <div style="font-size:15px; color:#CBD5E1; margin-bottom:12px;">{{ data.footer.hotel }}</div>
     <div class="footer-hotline">
       {% for hl in data.footer.hotlines %}
       <span>{{ hl }}</span>

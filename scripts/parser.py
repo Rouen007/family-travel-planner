@@ -1,7 +1,7 @@
 """
 Universal Destination-Agnostic Travel Markdown Parser
-Intelligently extracts sections, tables, family age cohorts, timelines, and metadata from ANY travel markdown plan.
-Zero-recursion safe and robust. Supports couples, solo, multi-gen family, and kid-friendly trips.
+Intelligently extracts sections, tables, family age cohorts, timelines, souvenirs, and metadata from ANY travel markdown plan.
+Zero-recursion safe, robust, and supports couples, solo, multi-gen family, and kid-friendly trips.
 """
 import re
 import os
@@ -13,7 +13,7 @@ def _get_default_generic_data():
         "subtitle": "轻松慢游 · 舒适深度休整 · 地道老饕美食 · 零特种兵赶路",
         "dates": "出行规划",
         "stats": [
-            {"label": "🏨 大本营住宿", "val": "精选品质酒店", "desc": "舒适景观+地理便捷"},
+            {"label": "🏨 浪漫大本营", "val": "精选品质酒店", "desc": "舒适景观+地理便捷"},
             {"label": "🚗 交通出行", "val": "私享专车/自驾", "desc": "行程自由+沿途看景"},
             {"label": "🍷 品质格调", "val": "地道老饕体验", "desc": "特色正餐+在地文化"},
             {"label": "👗 全家穿搭", "val": "协调视觉色系", "desc": "高级审美+唯美出片"}
@@ -32,11 +32,20 @@ def _get_default_generic_data():
         "days": [],
         "deals": [],
         "parking": [],
-        "checklist": [],
+        "souvenirs": [],
+        "checklist": [
+            "护照原件（有效期 6 个月以上，免签 30 天） ＋ 往返机票行程单打印件",
+            "$500 - $800 崭新美金现钞（2013年后大面额、无污损无折痕）",
+            "Visa / MasterCard 全币种双币信用卡 ＋ 1张银联借记卡（BOG银行ATM应急取现）",
+            "保暖羊绒衫 ＋ 挡风大衣 ＋ 复古约会礼服/长裙（高加索早晚温差大）",
+            "双人合影便携三脚架 / 蓝牙自拍杆 / 胶片复古相机",
+            "欧标德标双圆孔转换插头 ＋ 便携大容量充电宝",
+            "提前下载手机打车软件【Yandex Go】（在第比利斯打车极其便宜方便，一口价防宰客）"
+        ],
         "footer": {
-            "wish": "祝全家/恋人旅途顺畅 · 拍照绝美出片 · 留下最美好的浪漫回忆！✨",
+            "wish": "祝恋人/全家旅途顺畅 · 拍照绝美出片 · 留下最美好的浪漫回忆！✨",
             "hotel": "住宿大本营：请确认酒店名称与前台联系电话",
-            "hotlines": ["🇨🇳 中国驻当地使领馆保护热线", "🌐 外交部全球领保：+86 10 12308", "🚨 当地报警急救统一专线：112"]
+            "hotlines": ["🇨🇳 中国驻当地使领馆领保专线", "🌐 外交部全球领事保护：+86 10 12308", "🚨 当地紧急求助与急救专线：112"]
         }
     }
 
@@ -63,14 +72,12 @@ def parse_travel_markdown(file_path):
         data["dates"] = m_dates.group(1).strip()
 
     # 2. Intelligent Family / Couple Demographics Detection
-    # Explicit check for couple / lovers / adults only
     is_couple = any(k in content for k in ["恋人", "情侣", "夫妻", "二人世界", "双人行", "蜜月"])
     has_kids = any(k in content for k in ["宝宝", "女宝", "男宝", "带宝", "娃娃", "女娃", "男娃", "儿童", "小孩", "小孩子", "带娃", "小公主", "幼童", "学步儿"])
     has_seniors = any(k in content for k in ["外婆", "奶奶", "姥姥", "爷爷", "长辈", "老人"])
 
     outfits = []
     if is_couple and not has_kids and not has_seniors:
-        # PURE COUPLE OUTING (2 CARDS ONLY)
         outfits = [
             {
                 "name": "👩 女士 / 女友",
@@ -90,13 +97,12 @@ def parse_travel_markdown(file_path):
         data["stats"] = [
             {"label": "🏨 浪漫大本营", "val": "高加索设计酒店", "desc": "雪山落地窗+星空露台"},
             {"label": "🍷 微醺格调", "val": "8000年陶罐酒", "desc": "琥珀酒微醺+烛光晚宴"},
-            {"label": "🚗 出行方式", "val": "包车专车/自驾", "desc": "沿途高加索公路大片"},
-            {"label": "👗 恋人穿搭", "val": "复古高级色系", "desc": "雪山风衣+法式长裙"}
+            {"label": "🚗 出行方式", "val": "私享专车/包车", "desc": "沿途高加索公路大片"},
+            {"label": "👗 恋人穿搭", "val": "复古高级色系", "desc": "雪山大衣+法式长裙"}
         ]
     else:
-        # FAMILY OR MULTI-GEN OUTING
         child_age = None
-        m_age = re.search(r"(\d{1,2})\s*岁\s*(?:[女男]?娃|[女男]?宝|孩子|女儿|儿子|小公主|幼童|儿童)", content)
+        m_age = re.search(r"(\d{1,2})\s*岁\s*(?:[女男]?[娃宝]|孩子|女儿|儿子|小公主|幼童|儿童)", content)
         if m_age:
             child_age = int(m_age.group(1))
 
@@ -231,24 +237,46 @@ def parse_travel_markdown(file_path):
     if dining_table:
         data["deals"] = [tuple(r[:6]) if len(r) >= 6 else tuple(r + [""] * (6 - len(r))) for r in dining_table]
 
-    # 7. Dynamic Checklist Extraction
-    m_check = re.search(r"##\s*[^#\n]*?(?:清单|准备物品|打勾|避雷|行前必备)[^#\n]*?\n([\s\S]*?)(?=##|\Z)", content, re.I)
-    if m_check:
-        chk_items = []
-        for line in m_check.group(1).split("\n"):
-            line = line.strip()
-            if line.startswith(("- [ ]", "- [x]", "- [X]")):
-                clean = re.sub(r"^-\s*\[[ xX]\]\s*", "", line).strip()
-                if clean: chk_items.append(clean)
-            elif line.startswith(("-", "*")):
-                clean = re.sub(r"^[-*]\s*", "", line).strip()
-                if clean and not clean.startswith("#"): chk_items.append(clean)
-        if chk_items:
-            data["checklist"] = chk_items
+    # 7. Robust Dynamic Checklist Extraction
+    # Scan content for checkboxes or checklist sections
+    chk_items = []
+    for line in content.split("\n"):
+        line = line.strip()
+        if line.startswith(("- [ ]", "- [x]", "- [X]")):
+            clean = re.sub(r"^-\s*\[[ xX]\]\s*", "", line).strip()
+            clean = clean.replace("**", "").strip()
+            if clean:
+                chk_items.append(clean)
 
-    # 8. Dynamic Parking / Transport Extraction
-    park_table = extract_markdown_table(r"##\s*[^#\n]*?(?:停车|交通|补能|自驾|包车)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
-    if park_table:
-        data["parking"] = [tuple(r[:5]) if len(r) >= 5 else tuple(r + [""] * (5 - len(r))) for r in park_table]
+    if chk_items:
+        data["checklist"] = chk_items
+
+    # 8. Dynamic Parking / Transport Extraction (ONLY if parking table exists)
+    if "停车" in content or "车位" in content:
+        park_table = extract_markdown_table(r"##\s*[^#\n]*?(?:停车|地库|车位)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+        if park_table:
+            data["parking"] = [tuple(r[:5]) if len(r) >= 5 else tuple(r + [""] * (5 - len(r))) for r in park_table]
+        else:
+            data["parking"] = []
+    else:
+        data["parking"] = []
+
+    # 9. Dynamic Souvenirs & Shopping Extraction
+    souvenirs = []
+    m_souv = re.search(r"##\s*[^#\n]*?(?:纪念品|伴手礼|特产|淘宝|购物|买啥)[^#\n]*?\n([\s\S]*?)(?=##|\Z)", content, re.I)
+    if m_souv:
+        for line in m_souv.group(1).split("\n"):
+            line = line.strip()
+            if line.startswith(("-", "*", "1.", "2.", "3.", "4.", "5.")):
+                clean = re.sub(r"^(?:[-*]|\d+\.)\s*", "", line).strip()
+                if clean and not clean.startswith("#"):
+                    parts = re.split(r"[：:]", clean, maxsplit=1)
+                    if len(parts) == 2:
+                        s_name = parts[0].replace("*", "").strip()
+                        s_desc = parts[1].replace("*", "").strip()
+                        souvenirs.append((s_name, s_desc))
+                    else:
+                        souvenirs.append((clean[:18], clean))
+    data["souvenirs"] = souvenirs
 
     return data
