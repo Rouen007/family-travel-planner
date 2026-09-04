@@ -54,6 +54,31 @@
     </div>
     {% endif %}
 
+    <!-- 气象预报与穿衣防雨 -->
+    {% if data.weather_rows %}
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
+      <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><span>🌤️</span> 气象预报 ＆ 穿衣防雨避雷总表</h2>
+      <table class="w-full text-xs text-left">
+        <thead>
+          <tr class="bg-sky-50 text-sky-800">
+            {% for h in data.weather_headers %}
+            <th class="p-2.5 font-bold">{{ h }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in data.weather_rows %}
+          <tr>
+            {% for cell in row %}
+            <td class="p-2.5 text-slate-700">{{ cell|replace("\n", "<br>")|safe }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
     <!-- Timeline -->
     {% if data.days %}
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">

@@ -70,6 +70,9 @@ def _get_default_generic_data():
         "parking_rows": [],
         "parking": [],
         "souvenirs": [],
+        "weather_headers": ["日期与节点", "天气与体感", "预估气温", "实战应对与穿衣提示"],
+        "weather_rows": [],
+        "weather_bullets": [],
         "checklist": [
             "护照原件（有效期 6 个月以上，免签 30 天） ＋ 往返机票行程单打印件",
             "$500 - $800 崭新美金现钞（2013年后大面额、无污损无折痕）",
@@ -354,6 +357,31 @@ def parse_travel_markdown(file_path):
                 data["map_b64"] = f"data:{mime};base64,{b64_data}"
         except Exception as e:
             print(f"Base64 map encode note: {e}")
+
+    # 9.8 Dynamic Weather Extraction
+    data["weather_headers"] = ["日期与节点", "天气与体感", "预估气温", "实战应对与穿衣提示"]
+    data["weather_rows"] = []
+    data["weather_bullets"] = []
+    m_wthr = re.search(r"^##\s+[^#\n]*?(?:天气|气象|气候|降雨|气温)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)", content, re.M | re.I)
+    if m_wthr:
+        w_text = m_wthr.group(1)
+        w_lines = [l.strip() for l in w_text.split("\n") if l.strip().startswith("|") and l.strip().endswith("|")]
+        if len(w_lines) >= 3:
+            data["weather_headers"] = [c.strip() for c in w_lines[0].split("|")[1:-1]]
+            data["weather_rows"] = [[c.strip() for c in l.split("|")[1:-1]] for l in w_lines[2:]]
+        else:
+            w_bullets = []
+            for line in w_text.split("\n"):
+                line = line.strip()
+                if line.startswith(("-", "*")):
+                    clean = re.sub(r"^[-*]\s*", "", line).strip()
+                    if clean and not clean.startswith("#"):
+                        parts = re.split(r"[：:]", clean, maxsplit=1)
+                        if len(parts) == 2:
+                            w_bullets.append((parts[0].replace("**", "").strip(), parts[1].replace("**", "").strip()))
+                        else:
+                            w_bullets.append((clean[:12], clean))
+            data["weather_bullets"] = w_bullets
 
     # 10. Dynamic Footer & Hotlines
     hotel_info = "上海国际旅游度假区万怡酒店 (浦东秀浦路 3999 弄 17 号 · 021-68869888)" if "万怡" in content else ("三亚亚龙湾天域度假酒店 (0898-88567888)" if "天域" in content else ("卡兹别克 Rooms Hotel (+995 322 02 00 99)" if "Rooms" in content else "请确认酒店大本营联系方式"))

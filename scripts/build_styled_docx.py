@@ -168,6 +168,48 @@ def build_docx(input_path, output_path):
 
         doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
+    # 2.5 Weather table
+    w_headers = data.get("weather_headers", [])
+    w_rows = data.get("weather_rows", [])
+    if w_rows and w_headers:
+        add_heading("气象预报 ＆ 穿衣防雨避雷总表", "🌤️")
+        num_w_cols = len(w_headers)
+        t_w = doc.add_table(rows=len(w_rows) + 1, cols=num_w_cols)
+        t_w.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_w.autofit = False
+        col_w = Inches(6.8 / num_w_cols)
+        for idx, h in enumerate(w_headers):
+            c = t_w.cell(0, idx)
+            c.width = col_w
+            set_cell_background(c, "F0F9FF")
+            set_cell_margins(c, top=100, bottom=100, left=60, right=60)
+            set_cell_border(c, top=dict(sz=4, color="BAE6FD"), bottom=dict(sz=6, color="0284C7"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+            p = c.paragraphs[0]
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            r = p.add_run(h)
+            r.font.bold = True
+            r.font.size = Pt(8.5)
+            r.font.color.rgb = RGBColor(3, 105, 161)
+
+        for r_idx, row in enumerate(w_rows):
+            bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
+            for c_idx in range(num_w_cols):
+                val = row[c_idx] if c_idx < len(row) else ""
+                c = t_w.cell(r_idx + 1, c_idx)
+                c.width = col_w
+                set_cell_background(c, bg)
+                set_cell_margins(c, top=60, bottom=60, left=60, right=60)
+                set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                r = p.add_run(str(val).replace("<br>", "\n").replace("**", ""))
+                r.font.size = Pt(8)
+                if c_idx == 0: r.font.bold = True
+
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
+
     # 3. Advance prep table
     prep_rows = data.get("prep_rows", [])
     if prep_rows:

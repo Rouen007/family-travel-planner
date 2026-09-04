@@ -183,6 +183,38 @@
   </div>
   {% endif %}
 
+  <!-- 气象预报与穿衣防雨指南 -->
+  {% if data.weather_rows %}
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-icon" style="background:#E0F2FE; color:#0284C7;">🌤️</div>
+        <div class="section-title">气象预报 ＆ 穿衣防雨避雷总表</div>
+      </div>
+      <div class="section-tag" style="background:#F0F9FF; color:#0284C7; border:1px solid #BAE6FD;">实时研判 · 防雨避晒</div>
+    </div>
+
+    <table class="deal-table">
+      <thead>
+        <tr>
+          {% for h in data.weather_headers %}
+          <th>{{ h }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data.weather_rows %}
+        <tr>
+          {% for cell in row %}
+          <td>{{ cell|replace("\n", "<br>")|safe }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   <!-- 抢票/准备时间表 -->
   {% if data.prep_rows %}
   <div class="section-card">
