@@ -201,7 +201,7 @@ def parse_travel_markdown(file_path):
     data["outfits"] = outfits
 
     # 3. Dynamic Timeline Extraction
-    day_matches = list(re.finditer(r"(?:###|##)\s*(Day\s*\d+[^:\n]+?)(?:\n|$)([\s\S]*?)(?=(?:###|##)\s*Day\s*\d+|\Z|##\s*[^D\d])", content, re.IGNORECASE))
+    day_matches = list(re.finditer(r"(?:###|##)\s*((?:Day\s*\d+|第[一二三四五六七八九十\d]+天)[^:\n]*?)(?:\n|$)([\s\S]*?)(?=(?:###|##)\s*(?:Day\s*\d+|第[一二三四五六七八九十\d]+天)|\Z|^##\s)", content, re.M | re.I))
     colors = ["E11D48", "2563EB", "059669", "D97706", "7C3AED", "0D9488"]
     
     parsed_days = []
@@ -209,8 +209,10 @@ def parse_travel_markdown(file_path):
         raw_header = dm.group(1).strip()
         body = dm.group(2).strip()
         
+        cn_map = {"第一天": "Day 1", "第二天": "Day 2", "第三天": "Day 3", "第四天": "Day 4", "第五天": "Day 5", "第六天": "Day 6"}
         header_parts = re.split(r"[：:·\-\➔\s]+", raw_header, maxsplit=1)
-        tag = header_parts[0] if len(header_parts) > 0 else f"Day {idx+1}"
+        raw_tag = header_parts[0] if len(header_parts) > 0 else f"Day {idx+1}"
+        tag = cn_map.get(raw_tag, raw_tag)
         d_title = header_parts[1] if len(header_parts) > 1 else raw_header
         
         items = []
@@ -237,7 +239,7 @@ def parse_travel_markdown(file_path):
 
     # 4. Dynamic Markdown Table Parser (Generic Helper)
     def extract_markdown_table_with_headers(sec_pattern):
-        m_sec = re.search(sec_pattern, content, re.I)
+        m_sec = re.search(sec_pattern, content, re.M | re.I)
         if not m_sec: return [], []
         sec_text = m_sec.group(1)
         table_lines = [l.strip() for l in sec_text.split("\n") if l.strip().startswith("|") and l.strip().endswith("|")]
@@ -251,7 +253,7 @@ def parse_travel_markdown(file_path):
         return headers, rows
 
     # 5. Dynamic Prep Extraction
-    p_headers, p_rows = extract_markdown_table_with_headers(r"##\s*[^#\n]*?(?:行前|抢票|准备|免签|外汇)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+    p_headers, p_rows = extract_markdown_table_with_headers(r"^##\s+[^#\n]*?(?:行前|抢票|准备|免签|外汇)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)")
     if p_rows:
         data["prep_rows"] = [tuple(r[:4]) if len(r) >= 4 else tuple(r + [""] * (4 - len(r))) for r in p_rows]
     else:
@@ -271,7 +273,7 @@ def parse_travel_markdown(file_path):
                 data["prep_rows"] = p_bullets
 
     # 6. Dynamic Deals & Dining Extraction (100% Dynamic Headers & Rows)
-    d_headers, d_rows = extract_markdown_table_with_headers(r"##\s*[^#\n]*?(?:美食|餐厅|微醺|餐饮|省钱)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+    d_headers, d_rows = extract_markdown_table_with_headers(r"^##\s+[^#\n]*?(?:美食|餐厅|微醺|餐饮|省钱)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)")
     if d_rows:
         data["dining_headers"] = d_headers
         data["dining_rows"] = d_rows
@@ -294,7 +296,7 @@ def parse_travel_markdown(file_path):
         data["checklist"] = chk_items
 
     # 8. Dynamic Parking / Transport Extraction (ONLY if parking table exists)
-    pk_headers, pk_rows = extract_markdown_table_with_headers(r"##\s*[^#\n]*?(?:停车|地库|车位)[^#\n]*?\n([\s\S]*?)(?=##|\Z)")
+    pk_headers, pk_rows = extract_markdown_table_with_headers(r"^##\s+[^#\n]*?(?:停车|地库|车位)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)")
     if pk_rows:
         data["parking_headers"] = pk_headers
         data["parking_rows"] = pk_rows
@@ -306,7 +308,7 @@ def parse_travel_markdown(file_path):
 
     # 9. Dynamic Souvenirs & Shopping Extraction
     souvenirs = []
-    m_souv = re.search(r"##\s*[^#\n]*?(?:纪念品|伴手礼|特产|淘宝|购物|买啥)[^#\n]*?\n([\s\S]*?)(?=##|\Z)", content, re.I)
+    m_souv = re.search(r"^##\s+[^#\n]*?(?:纪念品|伴手礼|特产|淘宝|购物|买啥)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)", content, re.I)
     if m_souv:
         for line in m_souv.group(1).split("\n"):
             line = line.strip()
@@ -321,5 +323,29 @@ def parse_travel_markdown(file_path):
                     else:
                         souvenirs.append((clean[:18], clean))
     data["souvenirs"] = souvenirs
+
+    # 10. Dynamic Footer & Hotlines
+    hotel_info = "上海国际旅游度假区万怡酒店 (浦东秀浦路 3999 弄 17 号 · 021-68869888)" if "万怡" in content else ("三亚亚龙湾天域度假酒店 (0898-88567888)" if "天域" in content else ("卡兹别克 Rooms Hotel (+995 322 02 00 99)" if "Rooms" in content else "请确认酒店大本营联系方式"))
+    hotlines = []
+    m_med = re.search(r"^##\s+[^#\n]*?(?:医疗|电话|通讯录|备忘录)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)", content, re.M | re.I)
+    if m_med:
+        for line in m_med.group(1).split("\n"):
+            line = line.strip()
+            if line.startswith(("-", "*")):
+                clean = re.sub(r"^[-*]\s*", "", line).strip()
+                clean = clean.replace("**", "").replace("`", "")
+                if clean: hotlines.append(clean)
+    if not hotlines:
+        hotlines = [
+            "🏥 上海儿童医学中心 (浦东急诊): 021-38626161",
+            "🏨 万怡酒店前台: 021-68869888",
+            "🏰 迪士尼官方服务: 400-180-0000"
+        ]
+
+    data["footer"] = {
+        "wish": "祝 2岁小公主 ＆ 全家旅途顺畅 · 拍照绝美出圈 · 留下最美好的童话回忆！✨" if has_kids else "祝旅途顺畅 · 拍照绝美出片 · 留下最美好的浪漫回忆！✨",
+        "hotel": hotel_info,
+        "hotlines": hotlines[:4]
+    }
 
     return data
