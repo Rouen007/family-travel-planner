@@ -405,7 +405,9 @@
   <!-- 底部信息 -->
   <div class="footer-card">
     <div style="font-size:19px; font-weight:800; color:#FFFFFF; margin-bottom:8px;">{{ data.footer.wish }}</div>
+    {% if data.footer.hotel %}
     <div style="font-size:15px; color:#CBD5E1; margin-bottom:12px;">{{ data.footer.hotel }}</div>
+    {% endif %}
     <div class="footer-hotline">
       {% for hl in data.footer.hotlines %}
       <span>{{ hl }}</span>
