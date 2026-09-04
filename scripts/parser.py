@@ -324,6 +324,26 @@ def parse_travel_markdown(file_path):
                         souvenirs.append((clean[:18], clean))
     data["souvenirs"] = souvenirs
 
+    # 9.5 Dynamic Map Image Extraction
+    map_img = ""
+    # Check markdown image tags
+    m_img = re.search(r"!\[.*?\]\((.*?\.(?:png|jpg|jpeg|webp))\)", content, re.I)
+    if m_img:
+        cand = m_img.group(1).strip()
+        if os.path.isabs(cand) and os.path.exists(cand):
+            map_img = cand
+        elif file_path:
+            rel_path = os.path.join(os.path.dirname(os.path.abspath(file_path)), cand)
+            if os.path.exists(rel_path): map_img = rel_path
+    
+    # Fallback to known map if exists in trip dir
+    if not map_img and file_path:
+        default_map = os.path.join(os.path.dirname(os.path.abspath(file_path)), "上海迪士尼亲子顺时针动线与烟花观赏实景地图.png")
+        if os.path.exists(default_map):
+            map_img = default_map
+
+    data["map_path"] = map_img
+
     # 10. Dynamic Footer & Hotlines
     hotel_info = "上海国际旅游度假区万怡酒店 (浦东秀浦路 3999 弄 17 号 · 021-68869888)" if "万怡" in content else ("三亚亚龙湾天域度假酒店 (0898-88567888)" if "天域" in content else ("卡兹别克 Rooms Hotel (+995 322 02 00 99)" if "Rooms" in content else "请确认酒店大本营联系方式"))
     hotlines = []

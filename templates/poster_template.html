@@ -214,6 +214,22 @@
   </div>
   {% endif %}
 
+  <!-- 园区实景手绘路线与烟花机位地图 -->
+  {% if data.map_path %}
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-icon" style="background:#FFE4E6; color:#E11D48;">🗺️</div>
+        <div class="section-title">迪士尼实景动线 ＆ 烟花王炸机位路线图</div>
+      </div>
+      <div class="section-tag" style="background:#FFF1F2; color:#BE123C; border:1px solid #FECDD3;">全景高清 · 标注文档</div>
+    </div>
+    <div style="border-radius:24px; overflow:hidden; border:2px solid #E2E8F0; box-shadow:0 8px 24px rgba(0,0,0,0.06);">
+      <img src="{{ data.map_path }}" style="width:100%; display:block;" alt="迪士尼实景路线图">
+    </div>
+  </div>
+  {% endif %}
+
   <!-- 每日行程 -->
   {% if data.days %}
   <div class="section-card">
@@ -278,13 +294,13 @@
   </div>
   {% endif %}
 
-  <!-- 仅在有停车需求时渲染停车导航 -->
-  {% if data.parking %}
+  <!-- 仅在有停车需求时渲染停车导航（100% 动态表头与自适应） -->
+  {% if data.parking_rows %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
         <div class="section-icon" style="background:#CCFBF1; color:#0D9488;">🅿️</div>
-        <div class="section-title">精准停车与自驾导航表</div>
+        <div class="section-title">全行程精准停车与自驾导航总表</div>
       </div>
       <div class="section-tag" style="background:#F0FDFA; color:#0D9488; border:1px solid #99F6E4;">车位充足 · 补能无忧</div>
     </div>
@@ -292,13 +308,17 @@
     <table class="deal-table">
       <thead>
         <tr>
-          <th>目的地</th><th>推荐停车场</th><th>导航搜索关键字</th><th>收费标准</th><th>核心优势与极充设施</th>
+          {% for h in data.parking_headers %}
+          <th>{{ h }}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
-        {% for p in data.parking %}
+        {% for row in data.parking_rows %}
         <tr>
-          <td><b>{{ p[0] }}</b></td><td>{{ p[1] }}</td><td><code>{{ p[2] }}</code></td><td>{{ p[3] }}</td><td>{{ p[4] }}</td>
+          {% for cell in row %}
+          <td>{{ cell|replace("\n", "<br>")|safe }}</td>
+          {% endfor %}
         </tr>
         {% endfor %}
       </tbody>

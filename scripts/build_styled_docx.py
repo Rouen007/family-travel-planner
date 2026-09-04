@@ -209,6 +209,17 @@ def build_docx(input_path, output_path):
 
         doc.add_paragraph().paragraph_format.space_after = Pt(4)
 
+    # 3.5 Map image insertion
+    map_path = data.get("map_path")
+    if map_path and os.path.exists(map_path):
+        add_heading("迪士尼实景动线 ＆ 烟花王炸机位手绘地图", "🗺️")
+        p_map = doc.add_paragraph()
+        p_map.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_map.paragraph_format.space_before = Pt(4)
+        p_map.paragraph_format.space_after = Pt(8)
+        run_map = p_map.add_run()
+        run_map.add_picture(map_path, width=Inches(6.8))
+
     # 4. Day by day schedule cards
     days = data.get("days", [])
     if days:
