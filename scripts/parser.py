@@ -343,6 +343,17 @@ def parse_travel_markdown(file_path):
             map_img = default_map
 
     data["map_path"] = map_img
+    data["map_b64"] = ""
+    if map_img and os.path.exists(map_img):
+        try:
+            import base64
+            with open(map_img, "rb") as f_img:
+                b64_data = base64.b64encode(f_img.read()).decode("utf-8")
+                ext = os.path.splitext(map_img)[1].lower().replace(".", "")
+                mime = "image/png" if ext == "png" else ("image/jpeg" if ext in ("jpg", "jpeg") else "image/webp")
+                data["map_b64"] = f"data:{mime};base64,{b64_data}"
+        except Exception as e:
+            print(f"Base64 map encode note: {e}")
 
     # 10. Dynamic Footer & Hotlines
     hotel_info = "上海国际旅游度假区万怡酒店 (浦东秀浦路 3999 弄 17 号 · 021-68869888)" if "万怡" in content else ("三亚亚龙湾天域度假酒店 (0898-88567888)" if "天域" in content else ("卡兹别克 Rooms Hotel (+995 322 02 00 99)" if "Rooms" in content else "请确认酒店大本营联系方式"))

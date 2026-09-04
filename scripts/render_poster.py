@@ -60,8 +60,10 @@ def render_poster(input_path, output_path, view=False):
         "--headless",
         "--disable-gpu",
         "--hide-scrollbars",
+        "--allow-file-access-from-files",
+        "--virtual-time-budget=3000",
         f"--screenshot={output_path}",
-        "--window-size=1080,8800",
+        "--window-size=1080,12000",
         f"file://{temp_html_path}"
     ]
     

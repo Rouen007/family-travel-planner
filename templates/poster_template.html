@@ -215,7 +215,7 @@
   {% endif %}
 
   <!-- 园区实景手绘路线与烟花机位地图 -->
-  {% if data.map_path %}
+  {% if data.map_b64 %}
   <div class="section-card">
     <div class="section-header">
       <div class="section-title-wrap">
@@ -225,7 +225,7 @@
       <div class="section-tag" style="background:#FFF1F2; color:#BE123C; border:1px solid #FECDD3;">全景高清 · 标注文档</div>
     </div>
     <div style="border-radius:24px; overflow:hidden; border:2px solid #E2E8F0; box-shadow:0 8px 24px rgba(0,0,0,0.06);">
-      <img src="{{ data.map_path }}" style="width:100%; display:block;" alt="迪士尼实景路线图">
+      <img src="{{ data.map_b64 }}" style="width:100%; display:block;" alt="迪士尼实景手绘动线与烟花机位地图">
     </div>
   </div>
   {% endif %}
