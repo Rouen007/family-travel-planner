@@ -13,3 +13,4 @@ Universal multi-generational family travel planning framework:
    - Seniors: Steamed crab + braised pork belly + hot TieGuanYin tea.
    - Parents: Sidan Ginger Duck + spicy/savory local treats.
 4. **Artifact Compilation**: Execute `python3 scripts/cli.py all --input <markdown_file> --output-dir <dist_dir> --view`.
+5. **Departure Checkpoints**: Derive a five-column checklist from the route for every hotel departure, vehicle exit, park re-entry, non-Disney photo stop, checkout, and final departure: stage, route/action, must bring, optional, and leave/check. Keep cameras, batteries, valuables, and heat-sensitive items out of parked cars.

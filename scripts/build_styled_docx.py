@@ -455,6 +455,45 @@ def build_docx(input_path, output_path):
 
         doc.add_paragraph().paragraph_format.space_after = Pt(6)
 
+    # 9. Stage-based departure / vehicle-exit checklist
+    stage_checklists = data.get("stage_checklists", [])
+    if stage_checklists:
+        add_heading("分阶段离店 / 离车携带清单", "🎒")
+        t_stage = doc.add_table(rows=len(stage_checklists) + 1, cols=5)
+        t_stage.alignment = WD_TABLE_ALIGNMENT.CENTER
+        t_stage.autofit = False
+        stage_widths = [Inches(1.15), Inches(1.35), Inches(1.95), Inches(1.25), Inches(1.1)]
+        stage_headers = ["阶段", "路线 / 动作", "必带", "可选", "留存与检查"]
+        for idx, h in enumerate(stage_headers):
+            c = t_stage.cell(0, idx)
+            c.width = stage_widths[idx]
+            set_cell_background(c, "F0FDF4")
+            set_cell_margins(c, top=100, bottom=100, left=60, right=60)
+            set_cell_border(c, top=dict(sz=4, color="BBF7D0"), bottom=dict(sz=6, color="16A34A"), left=dict(sz=4, color="DCFCE7"), right=dict(sz=4, color="DCFCE7"))
+            p = c.paragraphs[0]
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            r = p.add_run(h)
+            r.font.bold = True
+            r.font.size = Pt(8.5)
+        for r_idx, row in enumerate(stage_checklists):
+            values = [row.get("stage", ""), row.get("route", ""), row.get("must", ""), row.get("optional", ""), row.get("leave", "")]
+            bg = "FFFFFF" if r_idx % 2 == 0 else "F8FAFC"
+            for c_idx, val in enumerate(values):
+                c = t_stage.cell(r_idx + 1, c_idx)
+                c.width = stage_widths[c_idx]
+                set_cell_background(c, bg)
+                set_cell_margins(c, top=60, bottom=60, left=60, right=60)
+                set_cell_border(c, top=dict(sz=4, color="E2E8F0"), bottom=dict(sz=4, color="E2E8F0"), left=dict(sz=4, color="E2E8F0"), right=dict(sz=4, color="E2E8F0"))
+                p = c.paragraphs[0]
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                r = p.add_run(str(val).replace("<br>", "\n").replace("**", ""))
+                r.font.size = Pt(8)
+                if c_idx == 0:
+                    r.font.bold = True
+        doc.add_paragraph().paragraph_format.space_after = Pt(4)
+
     # Ensure output parent dir exists
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     doc.save(output_path)

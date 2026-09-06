@@ -49,6 +49,21 @@ class TestFamilyTravelPlanner(unittest.TestCase):
         names = [o["name"] for o in data["outfits"]]
         self.assertTrue(any("外婆" in n or "长辈" in n for n in names))
 
+    def test_stage_departure_checklist_shanghai(self):
+        """Verify stage-based leave-hotel/leave-car checklist is parsed."""
+        data = parse_travel_markdown(self.sample_shanghai)
+        self.assertEqual(len(data["stage_checklists"]), 8)
+        self.assertIn("进入迪士尼", data["stage_checklists"][1]["stage"])
+        self.assertIn("中华艺术宫", data["stage_checklists"][4]["route"])
+        self.assertIn("Pocket 4", data["stage_checklists"][1]["must"])
+        self.assertIn("X-T30", data["stage_checklists"][1]["leave"])
+        self.assertIn("不再回酒店", data["stage_checklists"][4]["leave"])
+        day3_checkout = data["stage_checklists"][4]["must"]
+        for item in ["洗面奶", "防晒", "化妆", "剃须刀", "袜子", "随身衣物"]:
+            self.assertIn(item, day3_checkout)
+        self.assertTrue(any("妈妈化妆包" in item for item in data["checklist"]))
+        self.assertTrue(any("袜子" in item for item in data["checklist"]))
+
     def test_micro_renderer_nested_loops(self):
         """Verify standalone micro-renderer handles nested for-loops and filters."""
         tmpl = '<h1>{{ data.title }}</h1>{% for d in data.days %}<div>{{ d.day_tag }}: {% for t_time, t_desc in d.items %}<span>{{ t_time }} - {{ t_desc }}</span>{% endfor %}</div>{% endfor %}'

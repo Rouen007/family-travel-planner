@@ -63,7 +63,10 @@ def render_poster(input_path, output_path, view=False):
         "--allow-file-access-from-files",
         "--virtual-time-budget=3000",
         f"--screenshot={output_path}",
-        "--window-size=1080,12000",
+        # Keep the viewport taller than any normal itinerary; Pillow crops the
+        # rendered page back to its actual content below. This prevents a
+        # longer departure checklist from being clipped at the old 12,000px cap.
+        "--window-size=1080,20000",
         f"file://{temp_html_path}"
     ]
     

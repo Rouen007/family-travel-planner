@@ -402,6 +402,33 @@
   </div>
   {% endif %}
 
+  <!-- 分阶段离店 / 离车携带清单 -->
+  {% if data.stage_checklists %}
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <div class="section-icon" style="background:#DCFCE7; color:#16A34A;">🎒</div>
+        <div class="section-title">分阶段离店 / 离车携带清单</div>
+      </div>
+      <div class="section-tag" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0;">出门前复核 · 不漏物品</div>
+    </div>
+    <table class="deal-table">
+      <thead><tr><th>阶段</th><th>路线 / 动作</th><th>必带</th><th>可选</th><th>留存与检查</th></tr></thead>
+      <tbody>
+        {% for row in data.stage_checklists %}
+        <tr>
+          <td><b>{{ row.stage }}</b></td>
+          <td>{{ row.route|replace("\n", "<br>")|safe }}</td>
+          <td>{{ row.must|replace("\n", "<br>")|safe }}</td>
+          <td>{{ row.optional|replace("\n", "<br>")|safe }}</td>
+          <td>{{ row.leave|replace("\n", "<br>")|safe }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   <!-- 底部信息 -->
   <div class="footer-card">
     <div style="font-size:19px; font-weight:800; color:#FFFFFF; margin-bottom:8px;">{{ data.footer.wish }}</div>

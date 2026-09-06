@@ -162,6 +162,31 @@
     </div>
     {% endif %}
 
+    <!-- 分阶段离店 / 离车携带清单 -->
+    {% if data.stage_checklists %}
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
+      <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2"><span>🎒</span> 分阶段离店 / 离车携带清单</h2>
+      <table class="w-full text-xs text-left">
+        <thead>
+          <tr class="bg-emerald-50 text-emerald-800">
+            <th class="p-2.5 font-bold">阶段</th><th class="p-2.5 font-bold">路线 / 动作</th><th class="p-2.5 font-bold">必带</th><th class="p-2.5 font-bold">可选</th><th class="p-2.5 font-bold">留存与检查</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in data.stage_checklists %}
+          <tr>
+            <td class="p-2.5 font-bold text-slate-900">{{ row.stage }}</td>
+            <td class="p-2.5 text-slate-700">{{ row.route|replace("\n", "<br>")|safe }}</td>
+            <td class="p-2.5 text-slate-700">{{ row.must|replace("\n", "<br>")|safe }}</td>
+            <td class="p-2.5 text-slate-700">{{ row.optional|replace("\n", "<br>")|safe }}</td>
+            <td class="p-2.5 text-slate-700">{{ row.leave|replace("\n", "<br>")|safe }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
     <!-- Footer -->
     <div class="bg-slate-900 text-slate-400 rounded-3xl p-6 text-center text-xs space-y-2">
       <div class="text-white font-bold text-sm">{{ data.footer.wish }}</div>

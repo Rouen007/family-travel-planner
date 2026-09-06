@@ -73,6 +73,7 @@ def _get_default_generic_data():
         "weather_headers": ["日期与节点", "天气与体感", "预估气温", "实战应对与穿衣提示"],
         "weather_rows": [],
         "weather_bullets": [],
+        "stage_checklists": [],
         "checklist": [
             "身份证原件 ＋ 电子门票/预约码",
             "满电大容量充电宝 ＋ 手机数据线",
@@ -429,6 +430,23 @@ def parse_travel_markdown(file_path):
             if clean: chk_items.append(clean)
 
     data["checklist"] = chk_items if chk_items else []
+
+    # 8.5 Dynamic stage-based departure / vehicle-exit checklist
+    # Expected table columns: stage, route/action, must bring, optional, leave/check.
+    sc_headers, sc_rows = extract_markdown_table_with_headers(
+        r"^##\s+[^#\n]*?(?:分阶段|离店|离车|携带|随身)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)"
+    )
+    if sc_rows:
+        data["stage_checklists"] = [
+            {
+                "stage": row[0].replace("**", "") if len(row) > 0 else "",
+                "route": row[1].replace("**", "") if len(row) > 1 else "",
+                "must": row[2].replace("**", "") if len(row) > 2 else "",
+                "optional": row[3].replace("**", "") if len(row) > 3 else "",
+                "leave": row[4].replace("**", "") if len(row) > 4 else ""
+            }
+            for row in sc_rows
+        ]
 
     # 8. Dynamic Parking / Transport Extraction (ONLY if parking table exists)
     pk_headers, pk_rows = extract_markdown_table_with_headers(r"^##\s+[^#\n]*?(?:停车|地库|车位)[^#\n]*?\n([\s\S]*?)(?=^##\s|\Z)")
