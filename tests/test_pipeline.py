@@ -56,13 +56,19 @@ class TestFamilyTravelPlanner(unittest.TestCase):
         self.assertIn("进入迪士尼", data["stage_checklists"][1]["stage"])
         self.assertIn("中华艺术宫", data["stage_checklists"][4]["route"])
         self.assertIn("Pocket 4", data["stage_checklists"][1]["must"])
+        self.assertIn("创可贴", data["stage_checklists"][1]["must"])
+        self.assertIn("坐垫", data["stage_checklists"][1]["must"])
+        self.assertIn("小凳子", data["stage_checklists"][1]["leave"])
+        self.assertIn("指甲刀", data["stage_checklists"][1]["leave"])
         self.assertIn("X-T30", data["stage_checklists"][1]["leave"])
         self.assertIn("不再回酒店", data["stage_checklists"][4]["leave"])
         day3_checkout = data["stage_checklists"][4]["must"]
-        for item in ["洗面奶", "防晒", "化妆", "剃须刀", "袜子", "随身衣物"]:
+        for item in ["洗面奶", "电动牙刷", "防晒", "化妆", "剃须刀", "袜子", "随身衣物", "创可贴", "指甲刀"]:
             self.assertIn(item, day3_checkout)
+        self.assertIn("专用充电器", day3_checkout)
         self.assertTrue(any("妈妈化妆包" in item for item in data["checklist"]))
         self.assertTrue(any("袜子" in item for item in data["checklist"]))
+        self.assertTrue(any("个人修护" in item for item in data["checklist"]))
 
     def test_micro_renderer_nested_loops(self):
         """Verify standalone micro-renderer handles nested for-loops and filters."""
